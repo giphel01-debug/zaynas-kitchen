@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Zayna's Kitchen — Owner Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bay:#0B5C6B;
+    --bay-dark:#083F49;
+    --turquoise:#17B8B0;
+    --coral:#FF6B47;
+    --sun:#FFC94A;
+    --sand:#FFF7EA;
+    --ink:#24312C;
+    --ink-soft:#5C6B64;
+    --white:#FFFFFF;
+    --radius:16px;
+    --shadow: 0 8px 24px rgba(11,92,107,0.12);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--sand);color:var(--ink);font-family:'Poppins',sans-serif;-webkit-font-smoothing:antialiased;}
+  .app{max-width:520px;margin:0 auto;min-height:100vh;background:var(--sand);}
+
+  /* LOCK SCREEN */
+  .lock-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(160deg,var(--bay) 0%,var(--bay-dark) 100%);}
+  .lock-box{background:var(--white);border-radius:20px;padding:30px 26px;max-width:340px;width:100%;text-align:center;}
+  .lock-box h1{font-family:'Fraunces',serif;font-size:26px;margin:0 0 4px;color:var(--bay-dark);}
+  .lock-box p{color:var(--ink-soft);font-size:13px;margin:0 0 18px;}
+  .lock-box input{width:100%;text-align:center;font-size:16px;padding:13px;border-radius:12px;border:1.5px solid #E4DCC9;margin-bottom:12px;font-family:'Poppins',sans-serif;}
+  .lock-box button{width:100%;background:var(--coral);color:var(--white);border:none;border-radius:100px;padding:13px;font-weight:700;font-size:14px;cursor:pointer;}
+  .lock-error{color:#C64B32;font-size:12.5px;margin-top:10px;display:none;}
+
+  /* HEADER */
+  .header{background:linear-gradient(160deg,var(--bay) 0%,var(--bay-dark) 100%);color:var(--sand);padding:26px 22px;}
+  .header h1{font-family:'Fraunces',serif;font-size:26px;margin:0;}
+  .header p{margin:6px 0 0;font-size:13px;color:#CFEAE6;}
+
+  .settings-bar{display:flex;justify-content:space-between;align-items:center;background:var(--sun);padding:12px 22px;flex-wrap:wrap;gap:10px;}
+  .settings-bar .rate{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--bay-dark);}
+  .settings-bar input{width:64px;padding:6px 8px;border-radius:8px;border:none;font-size:13px;}
+  .settings-bar .count{font-size:12px;font-weight:700;background:rgba(255,255,255,0.5);padding:5px 12px;border-radius:100px;color:var(--bay-dark);}
+
+  .tabs{display:flex;gap:8px;padding:18px 20px 6px;}
+  .tab{flex:1;text-align:center;padding:11px 8px;border-radius:100px;font-weight:600;font-size:14px;cursor:pointer;border:2px solid transparent;background:var(--white);color:var(--ink-soft);}
+  .tab.active{background:var(--coral);color:var(--white);box-shadow:var(--shadow);}
+
+  .list{padding:14px 16px 100px;display:flex;flex-direction:column;gap:14px;}
+
+  .save-fab{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);width:calc(100% - 32px);max-width:488px;background:#CFC3A3;color:var(--white);border:none;border-radius:100px;padding:15px 22px;font-weight:700;font-size:14.5px;box-shadow:0 10px 30px rgba(8,63,73,0.3);cursor:pointer;z-index:60;transition:background .2s;}
+  .save-fab.dirty{background:var(--coral);cursor:pointer;}
+  .save-fab:disabled{cursor:default;}
+  .card{background:var(--white);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);}
+  .card.unpublished{opacity:0.55;border:1.5px dashed #CFC3A3;box-shadow:none;}
+  .edit-field{width:100%;font-family:'Poppins',sans-serif;border:1.5px solid #E4DCC9;border-radius:10px;padding:9px 10px;font-size:13.5px;margin-top:6px;background:var(--sand);}
+  .edit-row{display:flex;gap:8px;margin-top:6px;}
+  .image-edit{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+  .item-thumb{width:56px;height:56px;object-fit:cover;border-radius:10px;border:1.5px solid #E4DCC9;}
+  .upload-status{font-size:11.5px;color:var(--ink-soft);}
+  .edit-row .edit-field{flex:1;}
+  .choice-edit-row{display:flex;gap:6px;align-items:center;margin-top:6px;}
+  .choice-edit-row input{flex:1;}
+  .icon-btn{border:none;background:#F1E9D8;border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:14px;color:var(--ink-soft);flex:none;}
+  .icon-btn.danger{color:#C64B32;}
+  .add-option-btn{margin-top:8px;background:none;border:none;color:var(--bay);font-weight:600;font-size:12.5px;cursor:pointer;padding:0;}
+  .toggle-row{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12.5px;color:var(--ink-soft);}
+  .card-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;}
+  .add-item-card{border:2px dashed #CFC3A3;border-radius:var(--radius);padding:16px;text-align:center;color:var(--ink-soft);cursor:pointer;font-weight:600;font-size:13.5px;background:transparent;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--white);padding:10px 18px;border-radius:100px;font-size:13px;z-index:70;opacity:0;pointer-events:none;transition:opacity .2s;max-width:80%;text-align:center;}
+  .toast.show{opacity:1;}
+  .name-label{font-family:'Fraunces',serif;font-size:15px;color:var(--ink-soft);margin-top:2px;}
+</style>
+</head>
+<body>
+
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-box">
+    <h1>Zayna's Kitchen</h1>
+    <p>Owner access only. Sign in to manage the menu.</p>
+    <input type="email" id="emailInput" placeholder="Email" autocomplete="username">
+    <input type="password" id="passwordInput" placeholder="Password" autocomplete="current-password" style="margin-top:10px;">
+    <button id="unlockBtn" style="margin-top:14px;">Sign in</button>
+    <div class="lock-error" id="lockError">Incorrect email or password</div>
+  </div>
+</div>
+
+<div class="app" id="app" style="display:none">
+  <div class="header">
+    <h1>Owner Panel</h1>
+    <p>Manage the Zayna's Kitchen menu — tap "Save changes" below when you're done editing.</p>
+  </div>
+  <div class="settings-bar">
+    <div class="count" id="kriyoyoCount"></div>
+    <button id="signOutBtn" style="background:#C64B32;color:var(--sand);border:none;border-radius:100px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;">🔒 Sign out</button>
+  </div>
+  <div class="settings-bar" style="background:var(--sand);">
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--bay-dark);">
+      <input type="checkbox" id="closedTodayCheck"> Closed today (overrides normal hours)
+    </label>
+    <button id="viewOrdersBtn" style="background:var(--bay-dark);color:var(--sand);border:none;border-radius:100px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;">📋 Orders</button>
+  </div>
+  <div class="settings-bar" style="background:var(--sand);flex-direction:column;align-items:stretch;">
+    <label style="font-size:13px;font-weight:600;color:var(--bay-dark);">Editing dish names & descriptions in:</label>
+    <div id="editLangTabs" style="display:flex;gap:6px;margin-top:6px;"></div>
+    <div style="font-size:11.5px;color:var(--ink-soft);margin-top:6px;">Every dish's name and description can be different in each language. Pick a language above, then edit each dish below.</div>
+  </div>
+  <div class="settings-bar" style="background:var(--sand);flex-direction:column;align-items:stretch;">
+    <label style="font-size:13px;font-weight:600;color:var(--bay-dark);">Open/Closed status right now</label>
+    <select id="statusOverrideSelect" style="padding:8px;border-radius:8px;border:1.5px solid #E4DCC9;font-size:13px;">
+      <option value="auto">Auto (based on normal hours)</option>
+      <option value="open">Force OPEN right now</option>
+      <option value="closed">Force CLOSED right now</option>
+    </select>
+  </div>
+  <div class="settings-bar" style="background:var(--sand);flex-direction:column;align-items:stretch;">
+    <label style="font-size:13px;font-weight:600;color:var(--bay-dark);">Homepage tagline (shown under your logo, editing in <span id="heroTaglineLangLabel"></span>)</label>
+    <textarea id="heroTaglineInput" rows="2" placeholder="Leave blank to use the default tagline for this language" style="padding:8px;border-radius:8px;border:1.5px solid #E4DCC9;font-size:13px;font-family:'Poppins',sans-serif;"></textarea>
+  </div>
+  <div class="settings-bar" style="background:var(--sand);flex-direction:column;align-items:stretch;">
+    <label style="font-size:13px;font-weight:600;color:var(--bay-dark);">Pickup/delivery note (shown to customers at checkout)</label>
+    <textarea id="pickupNoteInput" rows="2" placeholder="e.g. Pickup only for now — delivery coming soon!" style="padding:8px;border-radius:8px;border:1.5px solid #E4DCC9;font-size:13px;font-family:'Poppins',sans-serif;"></textarea>
+  </div>
+  <div class="settings-bar" style="background:var(--sand);flex-direction:column;align-items:stretch;">
+    <label style="font-size:13px;font-weight:600;color:var(--bay-dark);">Homepage background photos (auto-rotating slideshow)</label>
+    <div id="heroImagesList" style="display:flex;flex-wrap:wrap;gap:8px;margin:8px 0;"></div>
+    <input type="file" id="heroImageInput" accept="image/*" style="display:none">
+    <button id="addHeroImageBtn" style="background:var(--bay-dark);color:var(--sand);border:none;border-radius:100px;padding:8px 16px;font-size:12.5px;font-weight:600;cursor:pointer;width:fit-content;">📷 Add background photo</button>
+  </div>
+  <div class="tabs" id="tabs"></div>
+  <div class="list" id="list"></div>
+</div>
+
+<div class="app" id="ordersView" style="display:none">
+  <div class="header">
+    <h1>Recent Orders</h1>
+    <p><button id="backToMenuBtn" style="background:rgba(255,255,255,0.15);color:var(--sand);border:none;border-radius:100px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;">← Back to menu</button></p>
+  </div>
+  <div class="list" id="ordersList"></div>
+</div>
+
+<button class="save-fab" id="saveFab" disabled>Save changes</button>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = "https://wkgamjdggdymbzhuvenr.supabase.co";
+const SUPABASE_KEY = "sb_publishable_X7ZNlUaIx9xagaU_huiJEA_B7qBmRzz";
+const SESSION_KEY = "zayna-owner-session";
+const MAX_KRIYOYO_ACTIVE = 4;
+
+let session = null; // { access_token, refresh_token, expires_at }
+
+function authHeader(){
+  return session ? `Bearer ${session.access_token}` : `Bearer ${SUPABASE_KEY}`;
+}
+
+function saveSession(data){
+  session = {
+    access_token: data.access_token,
+    refresh_token: data.refresh_token,
+    expires_at: Date.now() + (data.expires_in * 1000)
+  };
+  try{ localStorage.setItem(SESSION_KEY, JSON.stringify(session)); }catch(e){}
+}
+
+function clearSession(){
+  session = null;
+  try{ localStorage.removeItem(SESSION_KEY); }catch(e){}
+}
+
+async function loginWithPassword(email, password){
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+    method: "POST",
+    headers: { apikey: SUPABASE_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password })
+  });
+  if(!res.ok) return false;
+  const data = await res.json();
+  saveSession(data);
+  return true;
+}
+
+async function refreshSession(){
+  try{
+    const saved = localStorage.getItem(SESSION_KEY);
+    if(!saved) return false;
+    const parsed = JSON.parse(saved);
+    if(!parsed.refresh_token) return false;
+    if(parsed.expires_at > Date.now() + 60000){
+      session = parsed;
+      return true;
+    }
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+      method: "POST",
+      headers: { apikey: SUPABASE_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_token: parsed.refresh_token })
+    });
+    if(!res.ok) return false;
+    const data = await res.json();
+    saveSession(data);
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+
+async function logout(){
+  try{
+    await fetch(`${SUPABASE_URL}/auth/v1/logout`, {
+      method: "POST",
+      headers: { apikey: SUPABASE_KEY, Authorization: authHeader() }
+    });
+  }catch(e){}
+  clearSession();
+}
+
+const DEFAULT_MENU = {
+  settings: {},
+  categories: [
+    {
+      id: "kriyoyo",
+      name: "Kuminda Kriyoyo",
+      items: [
+        { id: "k1", name: "Stoba di Kabritu", nameEn: "Goat Stew", priceUsd: 12.0, priceCg: 21.48, desc: "Tender goat meat, slow-stewed in a rich Curaçao-style sauce until falling off the bone.", choices: ["Aros Moro","Aros Blanku"], sundayOnly: true, published: true },
+        { id: "k2", name: "Stoba Di Galiña", nameEn: "Chicken Stew", priceUsd: 10.0, priceCg: 17.9, desc: "Chicken simmered in a savory Curaçao-style tomato stew, a true home-cooked classic.", choices: ["Batata Hasá","Aros"], sundayOnly: true, published: true },
+        { id: "k3", name: "Yambo", nameEn: "Okra Stew", priceUsd: 11.0, priceCg: 19.69, desc: "A hearty okra stew with fish, a Curaçao comfort-food staple.", choices: [], sundayOnly: true, published: true },
+        { id: "k4", name: "Piska Kòra", nameEn: "Red Snapper", priceUsd: 13.0, priceCg: 23.27, desc: "Fresh red snapper, pan-fried Curaçao style with a light, savory seasoning.", choices: ["Funchi","Aros Blanku"], sundayOnly: true, published: true },
+        { id: "k5", name: "Dradu", nameEn: "Mahi-Mahi", priceUsd: 13.0, priceCg: 23.27, desc: "Fresh mahi-mahi, pan-fried island style with a simple, savory seasoning.", choices: ["Funchi","Aros Blanku"], sundayOnly: true, published: false },
+        { id: "k6", name: "Baracuda", nameEn: "Barracuda", priceUsd: 12.0, priceCg: 21.48, desc: "Fresh barracuda fillet, pan-fried Curaçao style with a light, savory seasoning.", choices: ["Funchi","Aros Blanku"], sundayOnly: true, published: false },
+        { id: "k7", name: "Tuna", priceUsd: 13.0, priceCg: 23.27, desc: "Fresh tuna steak, pan-fried island style with a light, savory seasoning.", choices: ["Funchi","Aros Blanku"], sundayOnly: true, published: false },
+        { id: "k8", name: "Purunchi", nameEn: "Grouper", priceUsd: 12.0, priceCg: 21.48, desc: "Fresh grouper, pan-fried Curaçao style with a light, savory seasoning.", choices: ["Funchi","Aros Blanku"], sundayOnly: true, published: false }
+      ]
+    },
+    {
+      id: "pasapalu",
+      name: "Pasapalu",
+      items: [
+        { id: "p1", name: "Pastechi", nameEn: "Stuffed Pastry", priceUsd: 2.5, priceCg: 4.47, desc: "A crispy fried pastry filled with your choice of cheese or seasoned beef.", choices: ["Keshi","Karni"], sundayOnly: false, published: true },
+        { id: "p2", name: "Kroket", nameEn: "Croquette", priceUsd: 2.0, priceCg: 3.58, desc: "A crispy fried croquette filled with your choice of chicken or beef.", choices: ["Galiña","Karni"], sundayOnly: false, published: true },
+        { id: "p3", name: "Manduka", priceUsd: 2.5, priceCg: 4.47, desc: "A cheesy fried dough filled with your choice of chicken, beef, or tuna.", choices: ["Galiña","Karni","Tuna"], sundayOnly: false, published: true },
+        { id: "p4", name: "Home-made Mini Pizza", priceUsd: 3.5, priceCg: 6.27, desc: "A bite-sized homemade pizza, baked fresh with a savory topping.", choices: [], sundayOnly: false, published: true },
+        { id: "p5", name: "Pasapalu Combo", priceUsd: 8.0, priceCg: 14.32, desc: "A mix of Zayna's favorite Pasapalu — ask what's included this week!", choices: [], sundayOnly: false, published: true }
+      ]
+    },
+    {
+      id: "drinks",
+      name: "Refresko",
+      items: [
+        { id: "d1", name: "Awa di Lamunchi", nameEn: "Fresh Limeade", priceUsd: 2.0, priceCg: 3.58, desc: "Fresh limeade, made the traditional Curaçao way.", choices: [], sundayOnly: false, published: true },
+        { id: "d2", name: "Parchita", nameEn: "Passion Fruit Juice", priceUsd: 2.0, priceCg: 3.58, desc: "Refreshing passion fruit juice.", choices: [], sundayOnly: false, published: true },
+        { id: "d3", name: "Tamarein", nameEn: "Tamarind Juice", priceUsd: 2.0, priceCg: 3.58, desc: "Tangy-sweet tamarind juice.", choices: [], sundayOnly: false, published: true },
+        { id: "d4", name: "Partam", priceUsd: 2.0, priceCg: 3.58, desc: "A house mix of tamarind and passion fruit juice.", choices: [], sundayOnly: false, published: true }
+      ]
+    }
+  ]
+};
+
+let menu = null;
+let editLang = "en";
+
+function todayISO(){
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+}
+function isSoldOutToday(item){
+  return item.soldOutDate === todayISO();
+}
+let activeCategory = "kriyoyo";
+const $ = id => document.getElementById(id);
+
+function showToast(msg){
+  const el = $("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  setTimeout(()=>el.classList.remove("show"), 1800);
+}
+
+function escapeHtml(str){
+  const d = document.createElement("div");
+  d.textContent = str || "";
+  return d.innerHTML;
+}
+
+let menuExistsRemotely = false;
+
+function migrateMenu(m){
+  const KRIYOYO_SUBTITLE_DEFAULTS = {
+    en: "Cooked fresh every Sunday — order ahead, or same-day if it's Sunday!",
+    pap: "Kushiná fresku kada Djadumingu — pidi ku antisipashon, òf mes dia si e ta Djadumingu!",
+    es: "Cocinado fresco cada domingo — pide con anticipación, o el mismo día si es domingo!",
+    nl: "Elke zondag vers bereid — bestel vooruit, of dezelfde dag als het zondag is!"
+  };
+  m.categories.forEach(cat=>{
+    if(typeof cat.name === "string"){
+      const base = cat.name;
+      cat.name = { en: base, pap: base, es: base, nl: base };
+    } else if(!cat.name || typeof cat.name !== "object"){
+      cat.name = { en: "Category", pap: "Category", es: "Categoría", nl: "Categorie" };
+    } else {
+      const fallback = cat.name.pap || cat.name.en || "";
+      ["en","pap","es","nl"].forEach(k=>{ if(typeof cat.name[k] !== "string" || !cat.name[k]) cat.name[k] = cat.name[k] || fallback; });
+    }
+    if(!cat.subtitle || typeof cat.subtitle !== "object"){
+      cat.subtitle = (cat.id === "kriyoyo") ? {...KRIYOYO_SUBTITLE_DEFAULTS} : { en: "", pap: "", es: "", nl: "" };
+    } else {
+      ["en","pap","es","nl"].forEach(k=>{ if(typeof cat.subtitle[k] !== "string") cat.subtitle[k] = ""; });
+    }
+    cat.items.forEach(item=>{
+      if(typeof item.priceUsd !== "number"){
+        item.priceUsd = (typeof item.price === "number") ? item.price : 0;
+      }
+      if(typeof item.priceCg !== "number"){
+        item.priceCg = Math.round(item.priceUsd * 1.79 * 100) / 100;
+      }
+      if(typeof item.sundayOnly !== "boolean"){
+        item.sundayOnly = (typeof item.preorderOnly === "boolean") ? item.preorderOnly : (cat.id === "kriyoyo");
+      }
+      if(typeof item.published !== "boolean") item.published = true;
+      if(!Array.isArray(item.choices)) item.choices = [];
+      if(typeof item.desc === "string"){
+        item.desc = { en: item.desc, pap: "", es: "", nl: "" };
+      } else if(!item.desc || typeof item.desc !== "object"){
+        item.desc = { en: "", pap: "", es: "", nl: "" };
+      } else {
+        ["en","pap","es","nl"].forEach(k=>{ if(typeof item.desc[k] !== "string") item.desc[k] = ""; });
+      }
+      if(typeof item.name === "string"){
+        const base = item.name;
+        item.name = { en: item.nameEn || base, pap: base, es: base, nl: base };
+      } else if(!item.name || typeof item.name !== "object"){
+        item.name = { en: "", pap: "", es: "", nl: "" };
+      } else {
+        const fallback = item.name.pap || item.name.en || "";
+        ["en","pap","es","nl"].forEach(k=>{ if(typeof item.name[k] !== "string" || !item.name[k]) item.name[k] = item.name[k] || fallback; });
+      }
+    });
+  });
+  if(!m.settings) m.settings = {};
+  if(!m.settings.heroTagline || typeof m.settings.heroTagline !== "object"){
+    m.settings.heroTagline = { en: "", pap: "", es: "", nl: "" };
+  } else {
+    ["en","pap","es","nl"].forEach(k=>{ if(typeof m.settings.heroTagline[k] !== "string") m.settings.heroTagline[k] = ""; });
+  }
+  return m;
+}
+
+async function loadMenu(){
+  try{
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/menu_data?id=eq.zayna&select=data`, {
+      headers: { apikey: SUPABASE_KEY, Authorization: authHeader() }
+    });
+    const rows = await res.json();
+    if(rows && rows.length > 0){
+      menu = migrateMenu(rows[0].data);
+      menuExistsRemotely = true;
+    } else {
+      menu = migrateMenu(DEFAULT_MENU);
+      menuExistsRemotely = false;
+      await saveMenu();
+      menuExistsRemotely = true;
+    }
+  }catch(e){
+    menu = migrateMenu(DEFAULT_MENU);
+  }
+}
+
+function compressImageFile(file){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = e=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const maxDim = 900;
+        let { width, height } = img;
+        if(width > height){ if(width > maxDim){ height = Math.round(height * maxDim / width); width = maxDim; } }
+        else { if(height > maxDim){ width = Math.round(width * maxDim / height); height = maxDim; } }
+        const canvas = document.createElement("canvas");
+        canvas.width = width; canvas.height = height;
+        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+        canvas.toBlob(blob=>{
+          if(blob) resolve(blob); else reject(new Error("compress failed"));
+        }, "image/jpeg", 0.82);
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadItemImage(file, itemId){
+  const blob = await compressImageFile(file);
+  const path = `items/${itemId}.jpg`;
+  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/menu-images/${path}`, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: authHeader(),
+      "Content-Type": "image/jpeg",
+      "x-upsert": "true"
+    },
+    body: blob
+  });
+  if(!res.ok) throw new Error("upload failed");
+  return `${SUPABASE_URL}/storage/v1/object/public/menu-images/${path}?t=${Date.now()}`;
+}
+
+async function saveMenu(){
+  try{
+    if(menuExistsRemotely){
+      await fetch(`${SUPABASE_URL}/rest/v1/menu_data?id=eq.zayna`, {
+        method: "PATCH",
+        headers: { apikey: SUPABASE_KEY, Authorization: authHeader(), "Content-Type": "application/json", Prefer: "return=minimal" },
+        body: JSON.stringify({ data: menu })
+      });
+    } else {
+      await fetch(`${SUPABASE_URL}/rest/v1/menu_data`, {
+        method: "POST",
+        headers: { apikey: SUPABASE_KEY, Authorization: authHeader(), "Content-Type": "application/json", Prefer: "return=minimal" },
+        body: JSON.stringify({ id: "zayna", data: menu })
+      });
+    }
+  }catch(e){
+    showToast("Couldn't save — try again");
+  }
+}
+
+let isDirty = false;
+function markDirty(){
+  isDirty = true;
+  const btn = $("saveFab");
+  btn.disabled = false;
+  btn.classList.add("dirty");
+  btn.textContent = "Save changes";
+}
+
+$("saveFab").onclick = async ()=>{
+  if(!isDirty) return;
+  const btn = $("saveFab");
+  btn.textContent = "Saving...";
+  await saveMenu();
+  isDirty = false;
+  btn.disabled = true;
+  btn.classList.remove("dirty");
+  btn.textContent = "Saved ✓";
+  showToast("Changes saved");
+  setTimeout(()=>{ if(!isDirty) btn.textContent = "Save changes"; }, 2000);
+};
+
+window.addEventListener("beforeunload", (e)=>{
+  if(isDirty){ e.preventDefault(); e.returnValue = ""; }
+});
+
+function getCategory(){ return menu.categories.find(c=>c.id===activeCategory); }
+
+function kriyoyoPublishedCount(excludeId){
+  const cat = menu.categories.find(c=>c.id==="kriyoyo");
+  return cat.items.filter(i=>i.published && i.id!==excludeId).length;
+}
+
+function updateCount(){
+  $("kriyoyoCount").textContent = `${kriyoyoPublishedCount(null)}/${MAX_KRIYOYO_ACTIVE} active`;
+}
+
+function renderTabs(){
+  const tabs = $("tabs");
+  tabs.innerHTML = "";
+  menu.categories.forEach(cat=>{
+    const el = document.createElement("div");
+    el.className = "tab" + (cat.id===activeCategory ? " active" : "");
+    el.textContent = (cat.name && cat.name[editLang]) || cat.id;
+    el.onclick = ()=>{ activeCategory = cat.id; renderTabs(); renderList(); };
+    tabs.appendChild(el);
+  });
+  const addTab = document.createElement("div");
+  addTab.className = "tab";
+  addTab.style.flex = "0 0 auto";
+  addTab.style.padding = "11px 16px";
+  addTab.textContent = "+";
+  addTab.onclick = ()=>{
+    const name = prompt("Name for the new category (e.g. Refresko):");
+    if(!name || !name.trim()) return;
+    const id = "cat_" + Date.now();
+    const base = name.trim();
+    menu.categories.push({
+      id,
+      name: { en: base, pap: base, es: base, nl: base },
+      subtitle: { en: "", pap: "", es: "", nl: "" },
+      items: []
+    });
+    activeCategory = id;
+    markDirty();
+    renderTabs();
+    renderList();
+  };
+  tabs.appendChild(addTab);
+}
+
+function renderList(){
+  const cat = getCategory();
+  const list = $("list");
+  list.innerHTML = "";
+
+  const catCard = document.createElement("div");
+  catCard.className = "card";
+  catCard.style.background = "var(--sun)";
+  catCard.innerHTML = `
+    <label style="font-size:11px;color:var(--bay-dark);font-weight:700;">CATEGORY NAME (${editLang.toUpperCase()})</label>
+    <input class="edit-field cat-name-field" value="${escapeHtml((cat.name && cat.name[editLang]) || "")}" placeholder="Category name">
+    <label style="font-size:11px;color:var(--bay-dark);font-weight:700;margin-top:10px;display:block;">SUBTITLE SHOWN UNDER THE TABS (${editLang.toUpperCase()})</label>
+    <input class="edit-field cat-subtitle-field" value="${escapeHtml((cat.subtitle && cat.subtitle[editLang]) || "")}" placeholder="Optional short note under this category">
+  `;
+  catCard.querySelector(".cat-name-field").onchange = (e)=>{
+    if(!cat.name) cat.name = {};
+    cat.name[editLang] = e.target.value.trim() || cat.id;
+    markDirty();
+    renderTabs();
+  };
+  catCard.querySelector(".cat-subtitle-field").onchange = (e)=>{
+    if(!cat.subtitle) cat.subtitle = {};
+    cat.subtitle[editLang] = e.target.value.trim();
+    markDirty();
+  };
+  list.appendChild(catCard);
+
+  cat.items.forEach(item=>{
+    const card = document.createElement("div");
+    card.className = "card" + (!item.published ? " unpublished" : "");
+    card.innerHTML = `
+      <div class="image-edit">
+        <img class="item-thumb" src="${item.image||''}" style="${item.image?'':'display:none'}">
+        <input type="file" accept="image/*" class="image-input" style="display:none">
+        <button class="icon-btn upload-photo-btn">📷 ${item.image ? 'Change photo' : 'Add photo'}</button>
+        <button class="icon-btn danger remove-photo-btn" style="${item.image?'':'display:none'}">Remove</button>
+        <span class="upload-status"></span>
+      </div>
+      <div class="edit-row">
+        <input class="edit-field name-field" value="${escapeHtml((item.name && item.name[editLang]) || "")}" placeholder="Item name">
+      </div>
+      <div class="edit-row">
+        <div style="flex:1;">
+          <label style="font-size:11px;color:var(--ink-soft);">USD ($)</label>
+          <input class="edit-field price-usd-field" type="number" step="0.01" value="${item.priceUsd}">
+        </div>
+        <div style="flex:1;">
+          <label style="font-size:11px;color:var(--ink-soft);">Cg</label>
+          <input class="edit-field price-cg-field" type="number" step="0.01" value="${item.priceCg}">
+        </div>
+      </div>
+      <textarea class="edit-field desc-field" rows="2" placeholder="Short description (optional)">${escapeHtml((item.desc && item.desc[editLang]) || "")}</textarea>
+      <div class="choices-edit"></div>
+      <button class="add-option-btn">+ Add option</button>
+      <div class="toggle-row">
+        <input type="checkbox" class="published-check" ${item.published ? "checked" : ""}>
+        <label>Visible to customers</label>
+      </div>
+      <div class="toggle-row">
+        <input type="checkbox" class="preorder-check" ${item.sundayOnly ? "checked" : ""}>
+        <label>Sunday only (same-day OK on Sundays)</label>
+      </div>
+      <div class="toggle-row">
+        <input type="checkbox" class="soldout-check" ${isSoldOutToday(item) ? "checked" : ""}>
+        <label>Sold out today (auto-resets tomorrow)</label>
+      </div>
+      <div class="card-foot">
+        <button class="icon-btn duplicate-item-btn">📄 Duplicate</button>
+        <button class="icon-btn danger delete-item-btn">🗑 Delete item</button>
+      </div>
+    `;
+    const fileInput = card.querySelector(".image-input");
+    const thumb = card.querySelector(".item-thumb");
+    const uploadBtn = card.querySelector(".upload-photo-btn");
+    const removeBtn = card.querySelector(".remove-photo-btn");
+    const statusEl = card.querySelector(".upload-status");
+    uploadBtn.onclick = ()=> fileInput.click();
+    fileInput.onchange = async ()=>{
+      const file = fileInput.files[0];
+      if(!file) return;
+      statusEl.textContent = "Uploading...";
+      try{
+        const url = await uploadItemImage(file, item.id);
+        item.image = url;
+        thumb.src = url;
+        thumb.style.display = "block";
+        uploadBtn.textContent = "📷 Change photo";
+        removeBtn.style.display = "inline-block";
+        markDirty();
+        statusEl.textContent = "Uploaded ✓";
+        setTimeout(()=>{ statusEl.textContent = ""; }, 1500);
+      }catch(e){
+        statusEl.textContent = "Upload failed";
+      }
+    };
+    removeBtn.onclick = ()=>{
+      item.image = null;
+      thumb.style.display = "none";
+      removeBtn.style.display = "none";
+      uploadBtn.textContent = "📷 Add photo";
+      markDirty();
+    };
+    const nameField = card.querySelector(".name-field");
+    const priceUsdField = card.querySelector(".price-usd-field");
+    const priceCgField = card.querySelector(".price-cg-field");
+    const descField = card.querySelector(".desc-field");
+    nameField.onchange = ()=>{ if(!item.name) item.name = {}; item.name[editLang] = nameField.value.trim() || "Untitled item"; markDirty(); };
+    priceUsdField.onchange = ()=>{ item.priceUsd = parseFloat(priceUsdField.value) || 0; markDirty(); };
+    priceCgField.onchange = ()=>{ item.priceCg = parseFloat(priceCgField.value) || 0; markDirty(); };
+    descField.onchange = ()=>{ if(!item.desc) item.desc = {}; item.desc[editLang] = descField.value.trim(); markDirty(); };
+    card.querySelector(".preorder-check").onchange = e=>{ item.sundayOnly = e.target.checked; markDirty(); };
+    card.querySelector(".soldout-check").onchange = e=>{ item.soldOutDate = e.target.checked ? todayISO() : null; markDirty(); };
+    card.querySelector(".published-check").onchange = e=>{
+      if(e.target.checked && cat.id === "kriyoyo"){
+        if(kriyoyoPublishedCount(item.id) >= MAX_KRIYOYO_ACTIVE){
+          e.target.checked = false;
+          alert("Only 4 Kuminda Kriyoyo items can show at once — turn off another first.");
+          return;
+        }
+      }
+      item.published = e.target.checked;
+      markDirty();
+      updateCount();
+      card.classList.toggle("unpublished", !item.published);
+    };
+
+    const choicesEditWrap = card.querySelector(".choices-edit");
+    function renderChoiceEdits(){
+      choicesEditWrap.innerHTML = "";
+      (item.choices||[]).forEach((c, idx)=>{
+        const row = document.createElement("div");
+        row.className = "choice-edit-row";
+        row.innerHTML = `
+          <input class="edit-field c-name" value="${escapeHtml(c)}" placeholder="Option name">
+          <button class="icon-btn danger c-del">✕</button>
+        `;
+        row.querySelector(".c-name").onchange = e=>{ item.choices[idx] = e.target.value.trim(); markDirty(); };
+        row.querySelector(".c-del").onclick = ()=>{ item.choices.splice(idx,1); markDirty(); renderChoiceEdits(); };
+        choicesEditWrap.appendChild(row);
+      });
+    }
+    renderChoiceEdits();
+    card.querySelector(".add-option-btn").onclick = ()=>{
+      if(!item.choices) item.choices = [];
+      item.choices.push("New option");
+      markDirty();
+      renderChoiceEdits();
+    };
+    card.querySelector(".duplicate-item-btn").onclick = ()=>{
+      const copy = JSON.parse(JSON.stringify(item));
+      copy.id = "item_"+Date.now();
+      copy.name = {};
+      ["en","pap","es","nl"].forEach(k=>{
+        const v = (item.name && item.name[k]) || "";
+        copy.name[k] = v ? (v + " (copy)") : "";
+      });
+      copy.published = false;
+      const idx = cat.items.findIndex(i=>i.id===item.id);
+      cat.items.splice(idx+1, 0, copy);
+      markDirty();
+      renderList();
+      updateCount();
+    };
+    card.querySelector(".delete-item-btn").onclick = ()=>{
+      const displayName = (item.name && (item.name.pap || item.name.en)) || "this item";
+      if(confirm(`Delete "${displayName}"?`)){
+        cat.items = cat.items.filter(i=>i.id!==item.id);
+        markDirty();
+        renderList();
+        updateCount();
+      }
+    };
+    list.appendChild(card);
+  });
+
+  const addCard = document.createElement("div");
+  addCard.className = "add-item-card";
+  addCard.textContent = "+ Add new item to " + ((cat.name && (cat.name[editLang] || cat.name.pap)) || cat.id);
+  addCard.onclick = ()=>{
+    const newItem = { id: "item_"+Date.now(), name:{en:"New item",pap:"New item",es:"New item",nl:"New item"}, priceUsd: 0.0, priceCg: 0.0, desc:{en:"",pap:"",es:"",nl:""}, image:null, choices:[], sundayOnly: cat.id==="kriyoyo", published: cat.id!=="kriyoyo" };
+    cat.items.push(newItem);
+    markDirty();
+    renderList();
+    updateCount();
+  };
+  list.appendChild(addCard);
+}
+
+function renderEditLangTabs(){
+  const wrap = $("editLangTabs");
+  const langs = [
+    { code: "en", label: "English" },
+    { code: "pap", label: "Papiamentu" },
+    { code: "es", label: "Español" },
+    { code: "nl", label: "Nederlands" }
+  ];
+  wrap.innerHTML = "";
+  langs.forEach(l=>{
+    const btn = document.createElement("button");
+    btn.textContent = l.label;
+    const active = editLang === l.code;
+    btn.style.cssText = `border:none;border-radius:100px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;background:${active ? "var(--coral)" : "var(--white)"};color:${active ? "white" : "var(--ink-soft)"};`;
+    btn.onclick = ()=>{
+      editLang = l.code;
+      renderEditLangTabs();
+      renderList();
+      refreshHeroTaglineField();
+    };
+    wrap.appendChild(btn);
+  });
+  refreshHeroTaglineField();
+}
+
+function refreshHeroTaglineField(){
+  const labels = { en: "English", pap: "Papiamentu", es: "Español", nl: "Nederlands" };
+  $("heroTaglineLangLabel").textContent = labels[editLang] || editLang;
+  $("heroTaglineInput").value = (menu.settings.heroTagline && menu.settings.heroTagline[editLang]) || "";
+}
+
+$("heroTaglineInput").onchange = e=>{
+  if(!menu.settings.heroTagline) menu.settings.heroTagline = {};
+  menu.settings.heroTagline[editLang] = e.target.value.trim();
+  markDirty();
+};
+
+$("signOutBtn").onclick = async ()=>{
+  await logout();
+  $("app").style.display = "none";
+  $("ordersView").style.display = "none";
+  $("lockScreen").style.display = "flex";
+  $("emailInput").value = "";
+  $("passwordInput").value = "";
+  $("lockError").style.display = "none";
+};
+
+$("closedTodayCheck").onchange = e=>{
+  menu.settings.closedDate = e.target.checked ? todayISO() : null;
+  markDirty();
+};
+
+$("statusOverrideSelect").onchange = e=>{
+  menu.settings.statusOverride = e.target.value;
+  markDirty();
+};
+
+$("pickupNoteInput").onchange = e=>{
+  menu.settings.pickupNote = e.target.value.trim();
+  markDirty();
+};
+
+function renderHeroImagesList(){
+  const wrap = $("heroImagesList");
+  wrap.innerHTML = "";
+  const images = menu.settings.heroImages || [];
+  if(images.length === 0){
+    wrap.innerHTML = `<div style="font-size:12px;color:var(--ink-soft);">Using the default beach photo. Add your own to replace it.</div>`;
+    return;
+  }
+  images.forEach((src, idx)=>{
+    const box = document.createElement("div");
+    box.style.position = "relative";
+    box.innerHTML = `
+      <img src="${src}" style="width:70px;height:70px;object-fit:cover;border-radius:10px;border:1.5px solid #E4DCC9;">
+      <button data-idx="${idx}" style="position:absolute;top:-6px;right:-6px;background:#C64B32;color:white;border:none;border-radius:50%;width:22px;height:22px;font-size:12px;cursor:pointer;">✕</button>
+    `;
+    box.querySelector("button").onclick = ()=>{
+      menu.settings.heroImages.splice(idx, 1);
+      markDirty();
+      renderHeroImagesList();
+    };
+    wrap.appendChild(box);
+  });
+}
+
+$("addHeroImageBtn").onclick = ()=> $("heroImageInput").click();
+$("heroImageInput").onchange = async ()=>{
+  const file = $("heroImageInput").files[0];
+  if(!file) return;
+  try{
+    const blob = await compressImageFile(file);
+    const path = `hero/${Date.now()}.jpg`;
+    const res = await fetch(`${SUPABASE_URL}/storage/v1/object/menu-images/${path}`, {
+      method: "POST",
+      headers: { apikey: SUPABASE_KEY, Authorization: authHeader(), "Content-Type": "image/jpeg", "x-upsert": "true" },
+      body: blob
+    });
+    if(!res.ok) throw new Error("upload failed");
+    const url = `${SUPABASE_URL}/storage/v1/object/public/menu-images/${path}?t=${Date.now()}`;
+    if(!menu.settings.heroImages) menu.settings.heroImages = [];
+    menu.settings.heroImages.push(url);
+    markDirty();
+    renderHeroImagesList();
+  }catch(e){
+    alert("Upload failed, try again.");
+  }
+};
+
+$("viewOrdersBtn").onclick = ()=>{
+  $("app").style.display = "none";
+  $("ordersView").style.display = "block";
+  loadOrders();
+};
+$("backToMenuBtn").onclick = ()=>{
+  $("ordersView").style.display = "none";
+  $("app").style.display = "block";
+};
+
+async function loadOrders(){
+  const list = $("ordersList");
+  list.innerHTML = `<div style="padding:20px;color:var(--ink-soft);">Loading...</div>`;
+  try{
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/orders?select=*&order=created_at.desc&limit=50`, {
+      headers: { apikey: SUPABASE_KEY, Authorization: authHeader() }
+    });
+    const rows = await res.json();
+    if(!Array.isArray(rows) || rows.length===0){
+      list.innerHTML = `<div style="padding:20px;color:var(--ink-soft);">No orders yet.</div>`;
+      return;
+    }
+    list.innerHTML = rows.map(row=>{
+      const o = row.data || {};
+      const when = new Date(row.created_at).toLocaleString();
+      const items = (o.items||[]).map(i=>`${i.qty}x ${i.name}${i.choice ? ' ('+i.choice+')' : ''}`).join(", ");
+      return `
+        <div class="card">
+          <div style="font-size:11.5px;color:var(--ink-soft);">${when}</div>
+          <div style="font-weight:700;margin-top:4px;">${escapeHtml(o.name||"Unknown")}</div>
+          <div style="font-size:12.5px;color:var(--ink-soft);margin-top:2px;">${escapeHtml(o.phone||"")} ${o.email ? " · "+escapeHtml(o.email) : ""}</div>
+          <div style="font-size:13px;margin-top:8px;">${escapeHtml(items)}</div>
+          <div style="font-size:13px;font-weight:700;margin-top:8px;">${escapeHtml(o.total||"")}</div>
+          <div style="font-size:12.5px;color:var(--ink-soft);margin-top:4px;">Pickup: ${escapeHtml(o.pickup||"")}</div>
+          ${o.notes ? `<div style="font-size:12px;color:var(--ink-soft);margin-top:4px;font-style:italic;">Notes: ${escapeHtml(o.notes)}</div>` : ""}
+        </div>
+      `;
+    }).join("");
+  }catch(e){
+    list.innerHTML = `<div style="padding:20px;color:#C64B32;">Couldn't load orders.</div>`;
+  }
+}
+
+async function enterOwnerPanel(){
+  $("lockScreen").style.display = "none";
+  $("app").style.display = "block";
+  await loadMenu();
+  $("closedTodayCheck").checked = menu.settings.closedDate === todayISO();
+  $("statusOverrideSelect").value = menu.settings.statusOverride || "auto";
+  $("pickupNoteInput").value = menu.settings.pickupNote || "";
+  renderHeroImagesList();
+  renderEditLangTabs();
+  renderTabs();
+  renderList();
+  updateCount();
+}
+
+$("unlockBtn").onclick = async ()=>{
+  const email = $("emailInput").value.trim();
+  const password = $("passwordInput").value;
+  $("lockError").style.display = "none";
+  const ok = await loginWithPassword(email, password);
+  if(ok){
+    await enterOwnerPanel();
+  } else {
+    $("lockError").style.display = "block";
+  }
+};
+$("emailInput").addEventListener("keydown", e=>{ if(e.key==="Enter") $("passwordInput").focus(); });
+$("passwordInput").addEventListener("keydown", e=>{ if(e.key==="Enter") $("unlockBtn").click(); });
+
+(async function tryAutoLogin(){
+  const ok = await refreshSession();
+  if(ok) await enterOwnerPanel();
+})();
+</script>
+</body>
+</html>
