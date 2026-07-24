@@ -21,7 +21,7 @@ A single-page ordering site plus a separate password-protected admin panel, both
 
 Deploying the whole folder to Netlify (or any static host) gives you:
 - `zaynaskitchen.com/` → customer site
-- `zaynaskitchen.com/owner` → owner panel
+
 
 ## Features
 
