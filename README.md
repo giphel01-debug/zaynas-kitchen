@@ -3,7 +3,7 @@
 A mobile-first food ordering website for Zayna's Kitchen — a home-cook business in Lagún, Curaçao, serving Kuminda Kriyoyo (local dishes), Pasapalu (snacks), and Refresko (local drinks).
 
 **Live site:** [zaynaskitchen.com](https://zaynaskitchen.com)
-**Owner panel:** [zaynaskitchen.com/owner](https://zaynaskitchen.com/owner)
+
 
 ---
 
